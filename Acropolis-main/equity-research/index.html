@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acropolis — Equity Research</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+  <style>
+    /* No sidebar on this page — content fills full width */
+    #content { margin-left: 0 !important; }
+
+    /* Wordmark + all topbar links share the same vertical centre */
+    #topbar .topbar-links { align-items: center; }
+    .topbar-wordmark {
+      font-family: 'Times New Roman MT', 'Times New Roman', Times, serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--white);
+      white-space: nowrap;
+      margin-right: 18px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body data-page="equity-research">
+
+<div id="app">
+
+  <header id="topbar">
+    <nav class="topbar-links">
+      <span class="topbar-wordmark">Acropolis</span>
+      <a href="/"               class="topbar-link">Home</a>
+      <span                     class="topbar-link current">Equity Research</span>
+      <a href="/economy/"     class="topbar-link">Economy</a>
+      <a href="/etf-explorer/"  class="topbar-link">ETF Explorer</a>
+      <a href="/dcf/"           class="topbar-link">DCF</a>
+      <a href="/comps/"         class="topbar-link">Comps</a>
+      <a href="/fixed-income/"  class="topbar-link">Fixed Income</a>
+      <a href="/options/"       class="topbar-link">Options</a>
+    </nav>
+    <div class="topbar-right"></div>
+  </header>
+
+  <div class="main-content">
+    <main id="content">
+      <div id="search-state">
+        <div class="page-header">
+          <div class="page-title">Equity Research</div>
+          <div class="page-subtitle">Fundamentals, valuation, and analyst estimates</div>
+        </div>
+        <div id="search-bar-wrap" style="display:flex;gap:0;margin-bottom:24px;">
+          <input id="ticker-input" type="text" placeholder="Enter ticker — e.g. AAPL, MSFT, NVDA"
+            style="flex:1;font-family:var(--sans);font-size:0.86rem;font-weight:400;
+            background:#2E2E2E;border:1px solid var(--border2);border-right:none;
+            color:var(--dim);padding:9px 14px;outline:none;letter-spacing:0.04em;"
+            onkeydown="if(event.key==='Enter')loadStock()" />
+          <button onclick="loadStock()"
+            style="font-family:var(--sans);font-size:0.78rem;font-weight:500;
+            letter-spacing:0.08em;text-transform:uppercase;background:var(--surface2);
+            border:1px solid var(--border2);color:var(--dim);padding:9px 20px;
+            cursor:pointer;transition:color 0.12s,background 0.12s;white-space:nowrap;"
+            onmouseover="this.style.color='var(--bright)'" onmouseout="this.style.color='var(--dim)'">
+            Search
+          </button>
+        </div>
+
+        <div class="section-title">Market Movers</div>
+        <div id="movers-wrap">
+          <div class="loading-placeholder"><span class="spinner"></span> Loading market data...</div>
+        </div>
+      </div>
+
+      <div id="stock-state" style="display:none;"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Event history modal -->
+<div id="event-modal-overlay" class="event-modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="event-modal">
+    <div class="event-modal-header">
+      <div class="event-modal-title" id="modal-title"></div>
+      <button class="event-modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="event-modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="../components/plotly-utils.js"></script>
+<script src="equity.js"></script>
+
+</body>
+</html>

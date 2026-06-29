@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acropolis — Portfolio Backtester</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+  <style>
+    /* ── Sidebar — fixed left, matches comps ── */
+    #sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: #222222;
+      border-right: 1px solid var(--grid);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0 0;
+      position: fixed;
+      top: var(--topbar-h);
+      left: 0;
+      height: calc(100vh - var(--topbar-h));
+      overflow-y: auto;
+      z-index: 90;
+    }
+    .bt-panel-inner { padding: 0 20px 56px; }
+
+    /* ── What-if "constrain to %" input — no spinner buttons ── */
+    .wi-cap-input::-webkit-inner-spin-button,
+    .wi-cap-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .wi-cap-input { -moz-appearance: textfield; }
+
+    /* ── Content offset ── */
+    #content { margin-left: 260px; padding: 28px 28px 40px; }
+
+    /* ── Section labels ── */
+    .bt-section-label {
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #E0E0E0;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    /* ── Input groups ── */
+    .bt-input-group { margin-bottom: 14px; }
+    .bt-input-label {
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--dim);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    /* ── Inputs — matches .comp-input ── */
+    .bt-input {
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      background: #282828;
+      border: 1px solid var(--border2);
+      color: var(--dim);
+      padding: 8px 12px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.12s;
+    }
+    .bt-input:focus { border-color: #686868; color: var(--bright); }
+    .bt-input::placeholder { color: #555; }
+    .bt-input option { background: #282828; color: var(--dim); }
+    .bt-input[type="number"]::-webkit-inner-spin-button,
+    .bt-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .bt-input[type="number"] { -moz-appearance: textfield; }
+    .bt-input[type="date"] { color-scheme: dark; cursor: pointer; }
+    .bt-input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6); cursor: pointer; opacity: 0.7;
+    }
+    .bt-input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+    select.bt-input { cursor: pointer; color-scheme: dark; }
+
+    /* ── Holdings rows ── */
+    .bt-holdings { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+    .bt-holding-row {
+      display: grid;
+      grid-template-columns: 1fr 72px 26px;
+      gap: 5px;
+      align-items: center;
+    }
+    .bt-holding-row .bt-input { padding: 7px 10px; font-size: 0.84rem; }
+    .bt-holding-row .bt-input.weight { text-align: right; }
+
+    .bt-remove-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: #555;
+      font-size: 0.9rem;
+      line-height: 1;
+      padding: 6px 0;
+      width: 26px;
+      cursor: pointer;
+      text-align: center;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .bt-remove-btn:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── Add / weight total ── */
+    .bt-add-btn {
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px dashed var(--border2);
+      color: #555;
+      padding: 7px 0;
+      width: 100%;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+      margin-bottom: 6px;
+    }
+    .bt-add-btn:hover { color: var(--dim); border-color: #686868; }
+
+    .bt-weight-total {
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      color: var(--muted);
+      text-align: right;
+      margin-bottom: 4px;
+    }
+
+    /* ── Rule ── */
+    .bt-rule { border: none; border-top: 1px solid var(--grid); margin: 16px 0; }
+
+    /* ── Run button — matches .comp-btn ── */
+    .bt-btn {
+      font-family: var(--sans);
+      font-size: 0.76rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--dim);
+      padding: 9px 0;
+      width: 100%;
+      cursor: pointer;
+      display: block;
+      margin-top: 4px;
+      transition: color 0.12s, background 0.12s, border-color 0.12s;
+    }
+    .bt-btn:hover:not(:disabled) { color: var(--bright); background: #383838; border-color: #686868; }
+    .bt-btn:disabled { opacity: 0.35; cursor: default; }
+
+    /* ── Empty state ── */
+    .bt-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+      text-align: center;
+    }
+    .bt-empty-title {
+      font-family: var(--sans);
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--dim);
+      margin-bottom: 6px;
+    }
+    .bt-empty-sub {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ── Chart cards ── */
+    .bt-chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      padding: 0;
+    }
+
+    /* ── Section titles (results) ── */
+    .bt-section-title {
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #E0E0E0;
+      margin: 24px 0 10px;
+    }
+
+    /* ── Loading overlay ── */
+    #bt-loader {
+      position: fixed;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      background: rgba(30,30,30,0.72);
+      backdrop-filter: blur(2px);
+    }
+    #bt-loader-msg {
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 860px) {
+      #sidebar { position: static; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      #content  { margin-left: 0; }
+    }
+  </style>
+</head>
+<body data-page="portfolio-backtester">
+
+<div id="app">
+  <header id="topbar"></header>
+
+  <div class="main-content">
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <aside id="sidebar">
+      <div class="bt-panel-inner">
+
+        <span class="bt-section-label">Portfolio</span>
+        <div style="display:grid;grid-template-columns:1fr 72px 26px;gap:5px;
+          margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--grid);">
+          <span style="font-family:var(--sans);font-size:0.65rem;font-weight:600;
+            letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);">Ticker</span>
+          <span style="font-family:var(--sans);font-size:0.65rem;font-weight:600;
+            letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);text-align:right;">Wt %</span>
+          <span></span>
+        </div>
+        <div class="bt-holdings" id="bt-holdings"></div>
+        <button class="bt-add-btn" onclick="addHolding()">+ Add holding</button>
+        <div class="bt-weight-total" id="bt-weight-total">Total: 0%</div>
+
+        <hr class="bt-rule" />
+
+        <span class="bt-section-label">Settings</span>
+
+        <div class="bt-input-group">
+          <label class="bt-input-label">Benchmark</label>
+          <input id="bt-benchmark" class="bt-input" type="text"
+            value="SPY" placeholder="e.g. SPY" maxlength="12" />
+        </div>
+
+        <div class="bt-input-group">
+          <label class="bt-input-label">Start date</label>
+          <input id="bt-start" class="bt-input" type="date" value="2010-01-01" />
+        </div>
+
+        <div class="bt-input-group">
+          <label class="bt-input-label">End date</label>
+          <input id="bt-end" class="bt-input" type="date" />
+        </div>
+
+        <div class="bt-input-group">
+          <label class="bt-input-label">Initial value ($)</label>
+          <input id="bt-initial" class="bt-input" type="number"
+            value="10000" min="1" step="1000" />
+        </div>
+
+        <div class="bt-input-group">
+          <label class="bt-input-label">Rebalancing</label>
+          <select id="bt-rebal" class="bt-input">
+            <option value="never">Buy &amp; Hold</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
+            <option value="daily">Daily</option>
+          </select>
+        </div>
+
+        <hr class="bt-rule" />
+
+        <button id="bt-run-btn" class="bt-btn" onclick="runBacktest()">
+          Run backtest
+        </button>
+
+        <div style="height: 32px;"></div>
+
+      </div>
+    </aside>
+
+    <!-- ── Main content ─────────────────────────────────────── -->
+    <main id="content">
+      <div id="bt-results">
+        <div class="bt-empty">
+          <div class="bt-empty-title">Portfolio Backtester</div>
+          <div class="bt-empty-sub">Configure your portfolio in the panel, then run the backtest</div>
+        </div>
+      </div>
+      <div id="footer">For informational purposes only</div>
+    </main>
+
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="bt-loader">
+  <span class="spinner" style="width:26px;height:26px;border-width:3px;"></span>
+  <div id="bt-loader-msg">Running backtest...</div>
+</div>
+
+<script src="../components/shell.js"></script>
+<script src="../components/plotly-utils.js"></script>
+<script src="backtester.js"></script>
+
+</body>
+</html>

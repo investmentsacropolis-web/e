@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acropolis — Economy</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+</head>
+<body data-page="economy">
+
+<div id="app">
+
+  <header id="topbar"></header>
+
+  <div class="main-content">
+
+    <aside id="sidebar">
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    </aside>
+
+    <main id="content">
+      <div class="loading-placeholder">
+        <span class="spinner"></span> Initialising...
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script src="../components/shell.js"></script>
+<script src="../components/plotly-utils.js"></script>
+<script src="../components/fred.js"></script>
+<script src="../config.js"></script>
+<script src="economy.js"></script>
+
+</body>
+</html>

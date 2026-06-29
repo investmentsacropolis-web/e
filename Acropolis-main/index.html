@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acropolis</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .home-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 0;
+    }
+
+    .home-wordmark {
+      font-family: 'Times New Roman MT', 'Times New Roman', Times, serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .home-sub {
+      font-family: var(--sans);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .home-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      width: 260px;
+    }
+
+    .home-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .home-link:last-child {
+      border-bottom: none;
+    }
+
+    .home-link:hover {
+      color: var(--bright);
+      background: var(--surface2);
+    }
+
+    .home-link-arrow {
+      color: var(--border2);
+      transition: color 0.12s;
+      font-size: 0.8rem;
+    }
+
+    .home-link:hover .home-link-arrow {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="home-wrap">
+  <div class="home-wordmark">Acropolis</div>
+  <div class="home-sub">Research &amp; Analysis</div>
+
+  <nav class="home-links">
+    <a href="/equity-research/" class="home-link">
+      Equity Research <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/economy/" class="home-link">
+      Economy <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/portfolio-backtester/" class="home-link">
+      Portfolio Backtester <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/etf-explorer/" class="home-link">
+      ETF Explorer <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/dcf/" class="home-link">
+      DCF <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/comps/" class="home-link">
+      Comps <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/fixed-income/" class="home-link">
+      Fixed Income <span class="home-link-arrow">→</span>
+    </a>
+    <a href="/options/" class="home-link">
+      Options <span class="home-link-arrow">→</span>
+    </a>
+  
+  </nav>
+</div>
+
+</body>
+</html>

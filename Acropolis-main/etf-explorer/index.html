@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acropolis — ETF Explorer</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+  <style>
+    /* ── Widen sidebar for ETF Explorer ── */
+    #sidebar { width: 260px; min-width: 260px; }
+    #content  { margin-left: 260px; }
+
+    /* ── Sidebar input row (matches .dcf-input-group) ── */
+    .etf-input-group { margin-bottom: 18px; }
+    .etf-input-label {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--dim);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .etf-input {
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      background: #282828;
+      border: 1px solid var(--border2);
+      color: var(--dim);
+      padding: 8px 12px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.12s;
+    }
+    .etf-input:focus { border-color: #686868; color: var(--bright); }
+    .etf-input::placeholder { color: #555; }
+    .etf-select {
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      background: #282828;
+      border: 1px solid var(--border2);
+      color: var(--dim);
+      padding: 8px 12px;
+      outline: none;
+      width: 100%;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color 0.12s;
+    }
+    .etf-select:focus { border-color: #686868; }
+
+    /* ── Sidebar divider / section label ── */
+    .sidebar-rule {
+      border: none;
+      border-top: 1px solid var(--grid);
+      margin: 18px 0;
+    }
+    .sidebar-section-label {
+      font-family: var(--sans);
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #E0E0E0;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    /* ── Fetch button ── */
+    #etf-fetch-btn {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--dim);
+      padding: 9px 0;
+      width: 100%;
+      cursor: pointer;
+      display: block;
+      margin-top: 10px;
+      transition: color 0.12s, background 0.12s, border-color 0.12s;
+    }
+    #etf-fetch-btn:hover:not(:disabled) { color: var(--bright); background: #383838; border-color: #686868; }
+    #etf-fetch-btn:disabled { opacity: 0.35; cursor: default; }
+
+    /* ── Watchlist mini-cards (sidebar) ── */
+    .etf-watch-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+    .etf-watch-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .etf-watch-chip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #2A2A2A;
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+      min-width: 0;
+    }
+    .etf-watch-chip:hover { border-color: #686868; background: var(--surface2); }
+    .etf-watch-chip.active { border-color: var(--dim); background: var(--surface2); }
+    .etf-watch-ticker {
+      font-family: var(--sans);
+      font-size: 0.80rem;
+      font-weight: 600;
+      color: var(--dim);
+      letter-spacing: 0.04em;
+    }
+    .etf-watch-chip.active .etf-watch-ticker { color: var(--bright); }
+    .etf-watch-chg { font-family: var(--sans); font-size: 0.74rem; white-space: nowrap; }
+    .etf-watch-remove {
+      background: none;
+      border: 1px solid var(--border);
+      color: #555;
+      font-size: 0.84rem;
+      line-height: 1;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+      flex-shrink: 0;
+    }
+    .etf-watch-remove:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── Tabs (matches .dcf-tabs) ── */
+    .etf-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--grid);
+      margin-bottom: 0;
+      flex-wrap: wrap;
+    }
+    .etf-tab {
+      font-family: var(--sans);
+      font-size: 0.84rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: #7C7C7C;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 12px 18px;
+      cursor: pointer;
+      margin-bottom: -1px;
+      transition: color 0.12s;
+    }
+    .etf-tab:hover { color: var(--dim); }
+    .etf-tab.active { color: var(--bright); border-bottom-color: var(--dim); }
+
+    /* ── Sector allocation bars (list-style, used in Overview tab) ── */
+    .etf-sector-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-family: var(--sans);
+      font-size: 0.80rem;
+    }
+    .etf-sector-name { color: var(--label); width: 160px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .etf-sector-pct { color: var(--dim); font-variant-numeric: tabular-nums; width: 48px; flex-shrink: 0; text-align: right; }
+    .etf-sector-track { flex: 1; background: var(--grid); height: 6px; }
+    .etf-sector-fill { height: 6px; }
+
+    /* ── Screener checkboxes ── */
+    .etf-screener-checks { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .etf-screener-check { display: flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 0.80rem; color: var(--dim); cursor: pointer; }
+    .etf-screener-check input { cursor: pointer; accent-color: #6B9EC4; }
+
+    /* ── Remove number input spinner arrows on this page ── */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── Empty state ── */
+    #etf-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 360px;
+      text-align: center;
+    }
+    .etf-empty-title { font-family: var(--sans); font-size: 1.1rem; font-weight: 500; color: var(--dim); margin-bottom: 8px; }
+    .etf-empty-sub { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      #sidebar { display: none; }
+      #content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body data-page="etf-explorer">
+
+<div id="app">
+  <header id="topbar"></header>
+
+  <div class="main-content">
+    <aside id="sidebar">
+      <nav class="sidebar-nav" style="padding: 20px 0 0;">
+        <div style="padding: 0 22px;">
+
+          <div class="etf-input-group">
+            <label class="etf-input-label">Ticker</label>
+            <input id="etf-ticker" class="etf-input" type="text"
+              placeholder="e.g. VOO" maxlength="12" value="VOO"
+              onkeydown="if(event.key==='Enter')window.fetchEtf()" />
+            <button id="etf-fetch-btn" onclick="window.fetchEtf()">Load ETF</button>
+          </div>
+
+          <hr class="sidebar-rule" />
+          <span class="sidebar-section-label">Watchlist</span>
+          <div class="etf-watch-list" id="etf-watch-list"></div>
+          <div class="etf-input-group" style="margin-top:8px;">
+            <select id="etf-watch-add" class="etf-select" onchange="window.addToWatchlistFromSelect(this)">
+              <option value="">+ Add to watchlist</option>
+            </select>
+          </div>
+
+          <hr class="sidebar-rule" />
+          <span class="sidebar-section-label">Chart Range</span>
+          <div class="range-btns" id="etf-range-btns" style="flex-wrap:wrap;"></div>
+
+        </div>
+      </nav>
+    </aside>
+
+    <main id="content">
+      <div class="page-header">
+        <div class="page-title">ETF Explorer</div>
+        <div class="page-subtitle">Holdings, sector exposure, and side-by-side ETF comparison</div>
+      </div>
+
+      <div id="etf-content">
+        <div id="etf-empty-state">
+          <div class="etf-empty-title">ETF Explorer</div>
+          <div class="etf-empty-sub">Enter a ticker in the sidebar and click Load ETF</div>
+        </div>
+      </div>
+
+      <div id="footer">Data via Yahoo Finance · Not financial advice</div>
+    </main>
+  </div>
+</div>
+
+<script src="../components/shell.js"></script>
+<script src="etf_explorer.js"></script>
+
+</body>
+</html>
