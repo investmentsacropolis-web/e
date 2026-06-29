@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "e",
+  "compatibility_date": "2026-06-29",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "Acropolis-main"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
